@@ -1,31 +1,99 @@
-# SIMPUS-Mini - Jobsheet 03 (Responsive Design)
+# Ringkasan Jobsheet 5: JavaScript DOM & Event
 
-Repositori ini berisi hasil pengerjaan Jobsheet 3 untuk proyek **SIMPUS-Mini**. Fokus utama pada tahap ini adalah menerapkan konsep _Responsive Web Design_ (RWD) agar tata letak web dapat beradaptasi secara otomatis pada berbagai ukuran layar (Mobile, Tablet, dan Desktop) hanya dengan menggunakan murni HTML dan CSS.
+Modul ini membahas penambahan interaktivitas sisi klien (_client-side_) pada aplikasi web **SIMPUS-Mini** menggunakan Vanilla JavaScript tanpa library eksternal.
 
-## 🚀 Fitur & Implementasi Baru
+---
 
-Pada jobsheet ini, terdapat beberapa penambahan utama dari versi sebelumnya:
+## 1. Konsep Dasar DOM & Event
 
-1. **Meta Viewport:** Penambahan `<meta name="viewport">` agar rendering skala halaman di _browser mobile_ berjalan akurat.
-2. **Hamburger Menu (Checkbox Hack):** Navigasi interaktif untuk layar sempit yang dibuat sepenuhnya tanpa JavaScript, melainkan dengan memanfaatkan _pseudo-class_ `:checked` dan _sibling combinator_ (`~`).
-3. **Tabel Responsif:** Implementasi `overflow-x: auto` melalui _wrapper_ `<div class="table-responsive">` untuk mencegah tabel terpotong di layar kecil.
-4. **Media Queries:** Penyesuaian jumlah kolom pada _CSS Grid_ dan pembatasan lebar elemen secara dinamis berdasarkan ukuran _viewport_.
+- **DOM (Document Object Model)**: Representasi dokumen HTML dalam bentuk pohon objek (_node tree_) di memori browser yang memungkinkan JavaScript membaca, mengubah, menambah, atau menghapus elemen secara dinamis.
+- **Posisi `<script>`**: Diletakkan tepat sebelum penutup tag `</body>` agar seluruh struktur elemen HTML selesai dimuat terlebih dahulu oleh peramban sebelum skrip dieksekusi.
+- **Event & Event Listener**: Mekanisme JavaScript untuk merespons tindakan pengguna (seperti `click`, `keyup`, `submit`) menggunakan metode standar `.addEventListener()`.
+- **Guard Clause**: Pola pengecekan keberadaan elemen di awal fungsi (misal: `if (!elemen) return;`) guna mencegah galat _runtime_ pada halaman yang tidak memuat elemen target.
 
-## 📝 Hasil Pengerjaan Latihan Tambahan (Bagian 6.4)
+---
 
-Repositori ini juga mencakup penyelesaian 5 latihan tambahan:
+## 2. Fitur yang Dipelajari
 
-- **Latihan 1 & 2 (Custom Breakpoints):** Menambahkan _breakpoint_ khusus monitor sangat lebar (`min-width: 1400px`) dan menyesuaikan _breakpoint_ tablet/desktop ke `900px`.
-- **Latihan 3 (Pola Responsif Universal):** Menguji penerapan class `.table-responsive` pada elemen lain yang memakan lebar layar seperti tag `<pre>`.
-- **Latihan 4 (Eksperimen Combinator):** Menguji fleksibilitas CSS _sibling combinator_ (`~`) dengan memindahkan letak elemen `<label>` ikon hamburger ke bawah `<nav>`.
-- **Latihan 5 (Mobile-First Approach):** Merombak total seluruh struktur penulisan `style.css` yang awalnya menggunakan pola _Desktop-First_ (`max-width`) menjadi _Mobile-First_ (`min-width`). Desain layar HP kini dijadikan sebagai gaya _default_, yang kemudian ditarik membesar seiring dengan bertambahnya lebar layar.
+### A. Menu Hamburger Mobile
 
-## 🛠️ Teknologi yang Digunakan
+- Menggantikan teknik _checkbox hack_ berbasis CSS menjadi kontrol dinamis via JavaScript.
+- Menambahkan dan mencabut kelas CSS (`classList.toggle("nav-open")`) saat tombol navigasi diklik pengguna.
 
-- HTML5
-- CSS3 (Flexbox & CSS Grid)
+### B. Konfirmasi Hapus Data
 
-## 👤 Author
+- Memasang event listener pada kumpulan tombol hapus menggunakan `querySelectorAll()` dan `.forEach()`.
+- Menelusuri elemen baris tabel induk menggunakan penelusuran DOM `element.closest("tr")`.
+- Menampilkan dialog konfirmasi peramban via `confirm()` dan mencabut baris dari tampilan DOM menggunakan `row.remove()`.
 
-**Abdullah Faqih Khumaini**  
-Mahasiswa SIB-1B, Politeknik Negeri Malang
+### C. Filter Pencarian Real-Time
+
+- Mendengarkan event pengetikan `keyup` pada kotak pencarian.
+- Membandingkan kata kunci pencarian terhadap isi teks baris tabel.
+- Menyembunyikan baris yang tidak cocok dengan mengatur gaya inline `style.display = "none"` tanpa menghapusnya dari struktur tabel.
+
+### D. Validasi Form Sisi Klien
+
+- Mencegah aksi bawaan peramban mengirim data secara prematur melalui pemanggilan `event.preventDefault()`.
+- Memeriksa keterisian field wajib (_required_), rentang nilai angka, dan format isian khusus.
+- Menampilkan pesan kesalahan dinamis (`error-msg`) serta menandai input yang bermasalah menggunakan kelas CSS khusus (`input-error`).
+
+---
+
+## 3. Poin Inti 8.4 Latihan
+
+1. **Validasi ISBN**: Memeriksa kelayakan format teks menggunakan Regular Expression `/^[0-9-]+$/` (hanya angka dan tanda hubung) khusus saat field ISBN diisi.
+
+```javascript
+// Tambahkan di dalam fungsi initValidasiForm() pada event listener submit
+const isbn = form.querySelector("[name='isbn']");
+if (isbn && isbn.value.trim() !== "") {
+  const polaIsbn = /^[0-9-]+$/;
+  if (!polaIsbn.test(isbn.value.trim())) {
+    tampilkanError(isbn, "ISBN hanya boleh berisi angka dan tanda hubung (-).");
+    valid = false;
+  } else {
+    hapusError(isbn);
+  }
+} else if (isbn) {
+  hapusError(isbn);
+}
+```
+
+2. **Animasi Hamburger**: Mengganti perilaku kaku `display: none` menjadi transisi bertahap dengan memadukan properti `max-height`, `opacity`, dan `overflow: hidden` pada CSS.
+
+```css
+@media (max-width: 480px) {
+  header nav {
+    display: block;
+    width: 100%;
+    order: 3;
+    margin-top: 0;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+      max-height 0.35s ease,
+      opacity 0.25s ease,
+      margin-top 0.35s ease;
+  }
+
+  header nav.nav-open {
+    max-height: 250px;
+    opacity: 1;
+    margin-top: 1rem;
+  }
+}
+```
+
+3. **Filter Khusus Kolom Judul**: Membatasi pencarian kata kunci hanya pada sel pertama baris (`row.querySelector("td")`) agar tidak mencocokkan teks kolom pengarang, tahun, atau tombol aksi.
+
+```javascript
+// Perubahan di dalam loop rows.forEach() pada fungsi initTableFilter()
+rows.forEach(function (row) {
+  const colJudul = row.querySelector("td");
+  const teks = colJudul ? colJudul.textContent.toLowerCase() : "";
+
+  row.style.display = teks.includes(keyword) ? "" : "none";
+});
+```
